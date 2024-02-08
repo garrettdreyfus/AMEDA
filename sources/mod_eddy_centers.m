@@ -106,51 +106,71 @@ end
 j = 1; % first coordinates of the contour scan
 k = 1; % first contour
 
+
 % scan each LNAM contour
+[Jmat, Imat] = ndgrid(1:size(x,1),1:size(x,2));
+xrange = range(x(1,:));
+xmin = min(x(1,:));
+yrange = range(y(:,1));
+ymin = min(y(:,1));
 while j < size(CS,2)
 
     n = CS(2,j); % number of coordinates for the contour(j)
     xv = CS(1,j+1:j+n); % x values serie for the contour(j) coordinates
     yv = CS(2,j+1:j+n); % y values serie for the contour(j) coordinates
+ 
 
     % validate only bigger contour
     if n >= n_min
 
         % make a mask outside the contour
-        in = InPolygon(x,y,xv,yv);
-        maskin = mask;
-        maskin(~in) = 0;
-        maskin(in)  = 1;
-        %Lm = LNAM.*maskin;
-        Lm = LNAM;
-        Lm(~in) = NaN;
+        %in = InPolygon(x,y,xv,yv);
+    	in = poly2mask((xv-xmin)/xrange*size(x,1),(yv-ymin)/yrange*size(y,2),size(x,1),size(x,2));
+	if any(any(in))
+		[LC,idx] = max(abs(LNAM(in)));
+		[j_in,i_in]=find(in);
+		i_max = i_in(idx);
+		j_max = j_in(idx);
+		xMax = x(j_max,i_max);
+		yMax = y(j_max,i_max);
+		LC = LNAM(j_max,i_max);
+		if LC ~= 0 && mask(j_max,i_max)==1
+			if ~grid_ll || (grid_ll && abs(yMax) > lat_min)
+				if ~any(centers0.x==xMax & centers0.y==yMax)
+					centers0.type(k) = sign(LC(1));
+					centers0.x(k)    = xMax;
+					centers0.y(k)    = yMax;
+					centers0.j(k) = j_max;
+					centers0.i(k) = i_max;
+					MaxL(k) = LC;
+					k=k+1;
+				end
+			end
+		end
+	end
+
 
         % L maximum value inside the contour(j)  
-        if any(mask(:).*maskin(:)>0) && max(abs(Lm(:)))~=0
+        %if any(mask(in).*maskin(:)>0) && max(abs(Lm(:)))~=0
 
-            LC = Lm(abs(Lm)==max(abs(Lm(:))));
+        %   LC = Lm(abs(Lm)==max(abs(Lm(:))));
 
             % save coordinates of the L maximum inside the contour(j)
-            if mask(find(Lm==LC(1),1))==1
-                
-                xLmax = x(find(Lm==LC(1),1));
-                yLmax = y(find(Lm==LC(1),1));
+        %   if mask(find(Lm==LC(1),1))==1
+        %       
+	%max_index = find(Lm==LC(1),1)
+        %       xLmax = xin(max_index);
+        %       yLmax = yin(max_index);
 
-                if ~grid_ll || (grid_ll && abs(yLmax) > lat_min)
-                    
-                    if ~any(centers0.x==xLmax & centers0.y==yLmax)
-                        centers0.type(k) = sign(LC(1));
-                        centers0.x(k)    = xLmax;
-                        centers0.y(k)    = yLmax;
-                        [centers0.j(k),centers0.i(k)] = find(Lm==LC(1),1);
-                        MaxL(k) = LC(1);
-
-                        % increment the counter
-                        k = k + 1; % next contour
-                    end
-                end
-            end
-        end
+        %       if ~grid_ll || (grid_ll && abs(yLmax) > lat_min)
+        %           
+        %           if ~any(centers0.x==xLmax & centers0.y==yLmax)
+        %               % increment the counter
+        %               k = k + 1; % next contour
+        %           end
+        %       end
+        %   end
+        %end
     end
 
     % increment the counter
@@ -200,8 +220,6 @@ for ii=1:length(centers0.x)
     % coriolis parameter
     f = abs(f_i(C_J,C_I));
 
-    % resize coordinate and velocity matrix 
-    % (making sure not to go outside the domain)
     xx = x(max(C_J-bx,1):min(C_J+bx,size(x,1)), ...
         max(C_I-bx,1):min(C_I+bx,size(x,2)));
     yy = y(max(C_J-bx,1):min(C_J+bx,size(y,1)), ...
@@ -223,17 +241,24 @@ for ii=1:length(centers0.x)
 
     % indices of all max LNAM in the smaller area
     % (contains at least c_j and c_i)
-    cts_j = zeros(length(centers0.y),1);
-    cts_i = cts_j;
-    for k=1:length(centers0.y)
-        try
-            [cts_j(k),cts_i(k)] = find(yy==centers0.y(k) & xx==centers0.x(k));
-        catch
-        end
-    end
+    %cts_j = zeros(length(centers0.y),1);
+    %cts_i = cts_j;
 
-    % can be empty
-    zero_centers = find(cts_j==0 | cts_i==0);
+    %for k=1:length(centers0.y)
+    %   try
+    %       [cts_j(k),cts_i(k)] = find(yy==centers0.y(k) & xx==centers0.x(k));
+    %   catch
+    %   end
+    %end
+    jmax = min(min(C_J+bx,size(y,1))- max(C_J-bx,1) , min(C_J+bx,size(x,1))-max(C_J-bx,1) );
+    imax = min(min(C_I+bx,size(y,2))-max(C_I-bx,1),min(C_I+bx,size(x,2))-max(C_I-bx,1));
+    cts_i = (centers0.i - max(C_I-bx,1)+1)';
+    cts_j = (centers0.j - max(C_J-bx,1)+1)';
+    imask = cts_i<1 | cts_i>imax+1 | cts_j<1 | cts_j>jmax+1;
+    cts_i(imask)=0;
+    cts_j(imask)=0;
+
+    zero_centers = cts_j==0 | cts_i==0;
     cts_i(zero_centers) = [];
     cts_j(zero_centers) = [];
 
@@ -242,8 +267,8 @@ for ii=1:length(centers0.x)
         xy_ctsi = zeros(length(cts_i),1);
         xy_ctsj = xy_ctsi;
         for k=1:length(cts_i)
-            xy_ctsi(k) = xx(cts_j(k),cts_i(k));
-            xy_ctsj(k) = yy(cts_j(k),cts_i(k));
+		xy_ctsi(k) = xx(cts_j(k),cts_i(k));
+		xy_ctsj(k) = yy(cts_j(k),cts_i(k));
         end
     else
         disp(['!!! ERROR !!! No LNAM maximum computable in the smaller area ',...

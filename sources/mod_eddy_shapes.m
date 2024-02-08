@@ -107,9 +107,9 @@ function [centers2,shapes1,shapes2,profil2,warn_shapes,warn_shapes2] = ...
 disp(['Start step ',num2str(stp),' %-------------'])
 disp(' ')
 
+load('param_eddy_tracking')
 %----------------------------------------------
 % load key_source and parameters
-load('param_eddy_tracking')
 
 %----------------------------------------
 % load 2D velocity fields (m/s) for step stp
@@ -202,7 +202,7 @@ for ii=1:length(centers.type)
         % the others are flags output by eddy_dim, and saved in 'warnings_shapes';
         [CD,xy,allines,rmax,velmax,tau,deta,nrho,large,warn,calcul] =...
             eddy_dim(uu,vv,sshh,mask,x,y,centers,ii,f_i(c_j,c_i),...
-            Rdi(c_j,c_i),fac*bxi(c_j,c_i));
+            Rdi(c_j,c_i),fac*bxi(c_j,c_i),false,grid_ll,type_detection,DH,nH_lim,n_min,k_vel_decay,nR_lim,nrho_lim,Np);
 
         %----------------------------------------------
         % flags exploitation

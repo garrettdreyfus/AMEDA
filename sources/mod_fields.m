@@ -34,6 +34,7 @@ disp([' <<< Compute fields step ',num2str(stp)])
 % load keys_sources and parameters (use mod_eddy_params.m first)
 load('param_eddy_tracking','grid_ll','resol','deg','b','bi','f','f_i')
 
+
 %----------------------------------------
 % replace parameters by arguments
 if nargin==3
@@ -131,8 +132,7 @@ for i=borders:length(vv(:,1))-borders+1
         if ~isnan(vv(i,ii))
 
             % calculate LOW
-            OW = okubo(i-b(i,ii):i+b(i,ii),ii-b(i,ii):ii+b(i,ii));
-            LOW(i,ii) = mean(OW(:));
+            LOW(i,ii) = sum(sum(okubo(i-b(i,ii):i+b(i,ii),ii-b(i,ii):ii+b(i,ii))))/((2*b(i,ii))^2);
 
             % calculate LNAM
             xlocal = x(i-b(i,ii):i+b(i,ii),ii-b(i,ii):ii+b(i,ii)); % x square sample of length b

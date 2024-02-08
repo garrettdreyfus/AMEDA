@@ -1,5 +1,5 @@
 function [CD,xy,allines,rmax,velmax,tau,deta,nrho,large,warn,calcul] =...
-    eddy_dim(u,v,ssh,mask,x,y,centers,ii,farea,Rdarea,bxarea,plo)
+    eddy_dim(u,v,ssh,mask,x,y,centers,ii,farea,Rdarea,bxarea,plo,grid_ll,type_detection,DH,nH_lim,n_min,k_vel_decay,nR_lim,nrho_lim,Np)
 %[CD,xy,allines,rmax,velmax,tau,deta,nrho,large,warn,calcul] =...
 %               eddy_dim(u,v,ssh,mask,x,y,centers,ii {,f,Rd,bx,plo})
 %
@@ -53,12 +53,11 @@ while ~exist('param_eddy_tracking.mat','file')
   pause(1)
 end
 
-load('param_eddy_tracking')
-
 % replace parameters by arguments
 %----------------------------------------
 bx = bxarea;
 Rd = Rdarea;
+g=9.8;
 f  = abs(farea);
 
 if nargin<=11
