@@ -32,7 +32,6 @@ if nargin==7
 end
 
 % build mask
-mask(mask==0) = nan;
 [N0,M0] = size(mask);
 
 % Nil if nan
@@ -129,8 +128,6 @@ psi = (psi_xy+psi_yx)/2.*mask;
 
 % PSI in first coastal pixel is an average of its 9 neighbours
 
-mask(isnan(mask)) = 0;
-
 for i=1:N0
     for j=1:M0
         if mask(i,j)==0 && ...
@@ -138,7 +135,7 @@ for i=1:N0
             
             psi1     = psi(max(i-1,1):min(i+1,N0),max(j-1,1):min(j+1,M0));
             psi(i,j) = nanmean(psi1(:));
-        end
+	end
     end
 end
 

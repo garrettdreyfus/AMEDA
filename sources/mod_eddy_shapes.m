@@ -1,5 +1,5 @@
 function [centers2,shapes1,shapes2,profil2,warn_shapes,warn_shapes2] = ...
-    mod_eddy_shapes(source,stp,fields,centers)
+    mod_eddy_shapes(source,stp,fields,centers,f_i,bxi,Dxi)
 %[centers2,shapes1,shapes2,profil2,warn_shapes,warn_shapes2] =
 %       mod_eddy_shapes(source,stp,fields,centers)
 %
@@ -202,7 +202,7 @@ for ii=1:length(centers.type)
         % the others are flags output by eddy_dim, and saved in 'warnings_shapes';
         [CD,xy,allines,rmax,velmax,tau,deta,nrho,large,warn,calcul] =...
             eddy_dim(uu,vv,sshh,mask,x,y,centers,ii,f_i(c_j,c_i),...
-            Rdi(c_j,c_i),fac*bxi(c_j,c_i),false,grid_ll,type_detection,DH,nH_lim,n_min,k_vel_decay,nR_lim,nrho_lim,Np);
+            Rd,fac*bxi(c_j,c_i),false,grid_ll,type_detection,DH,nH_lim,n_min,k_vel_decay,nR_lim,nrho_lim,Np);
 
         %----------------------------------------------
         % flags exploitation
@@ -502,8 +502,8 @@ for ii=1:length(centers.type)
     % warnings from shape computation
     warn_shapes.no_curve(ii)     = warn;
     warn_shapes.f(ii)            = f_i(c_j,c_i);
-    warn_shapes.Rd(ii)           = Rdi(c_j,c_i);
-    warn_shapes.gama(ii)         = gamai(c_j,c_i);
+    warn_shapes.Rd(ii)           = Rd;
+    warn_shapes.gama(ii)         = Rd/Dxi(c_j,c_i);
     warn_shapes.bx(ii)           = bxi(c_j,c_i)*fac;
     warn_shapes.calcul_curve(ii) = calcul;
     warn_shapes.large_curve1(ii) = large(1);
@@ -688,7 +688,7 @@ else
                 
                 % replace also shapes1_max if shapes2 proper shapes1
                 if shapes2.velmax(ii) > shapes1.velmax(ii) &&...
-                        shapes2.rmax(ii) < nR_lim*Rdi(c_j,c_i) &&...
+                        shapes2.rmax(ii) < nR_lim*Rd &&...
                         shapes2.nrho(ii) < nrho_lim &&...
                         warn_shapes2.large_curve2(ii) <= warn_shapes2.large_curve1(ii)
 

@@ -13,12 +13,16 @@ SPHEROID = referenceEllipsoid('wgs84', 'km'); % // Reference ellipsoid. You can 
 distx = sqrt(N.^2 + E.^2); 
 Dx = nan*x;
 Dx(2:size(x,1)-1,2:size(x,2)-1)=(distx+disty)/2;
-%for i=2:size(x,1)-1
-    %for j=2:size(x,2)-1
-        %distx(i,j) = sw_dist( y(i,[j-1 j+1]), x(i,[j-1 j+1]), 'km')/2;
-    %end
-%end
-%Dx = ( distx + disty )/2;
+
+olddistx = nan*x;
+for i=2:size(x,1)-1
+    for j=2:size(x,2)-1
+        olddistx(i,j) = sw_dist( y(i,[j-1 j+1]), x(i,[j-1 j+1]), 'km')/2;
+    end
+end
+
+droldDx = ( olddistx + disty )/2;
+
 Dx(1,:)  = Dx(2,:)-diff(Dx(2:3,:));
 Dx(end,:)= Dx(end-1,:)+diff(Dx(end-2:end-1,:));
 Dx(:,1)  = Dx(:,2);

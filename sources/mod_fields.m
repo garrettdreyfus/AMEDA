@@ -1,4 +1,4 @@
-function fields = mod_fields(source,stp,resolution)
+function fields = mod_fields(source,stp,resolution,b,bi,f,f_i)
 %fields = mod_fields(source,stp {,resolution})
 %
 %  Creates 2D fields of various computation by finite spatial element
@@ -32,12 +32,11 @@ disp([' <<< Compute fields step ',num2str(stp)])
 
 %----------------------------------------
 % load keys_sources and parameters (use mod_eddy_params.m first)
-load('param_eddy_tracking','grid_ll','resol','deg','b','bi','f','f_i')
-
+load('param_eddy_tracking','grid_ll','resol','deg');
 
 %----------------------------------------
 % replace parameters by arguments
-if nargin==3
+if exist('resolution')
     resol = resolution;
 end
 
@@ -126,13 +125,19 @@ LOW = nan(size(uu));
 
 %----------------------------------------
 % calculate LNAM and LOW in all domain pixels
-for i=borders:length(vv(:,1))-borders+1
+for i=borders:length(vv(:,1))-borders+1 
+    if mod(i,1000)==0
+	disp('another thousand rows done');
+    end
+    grid_ll=true;
+    %LOWrow = zeros(1,size(uu,2));
+    %Lrow = zeros(1,size(vv,2));
     for ii=borders:length(vv(1,:))-borders+1
 
         if ~isnan(vv(i,ii))
 
             % calculate LOW
-            LOW(i,ii) = sum(sum(okubo(i-b(i,ii):i+b(i,ii),ii-b(i,ii):ii+b(i,ii))))/((2*b(i,ii))^2);
+            LOW(i,ii) = sum(sum(okubo(i-b(i,ii):i+b(i,ii),ii-b(i,ii):ii+b(i,ii))))/((2*b(i,ii)+1)^2);
 
             % calculate LNAM
             xlocal = x(i-b(i,ii):i+b(i,ii),ii-b(i,ii):ii+b(i,ii)); % x square sample of length b
@@ -159,16 +164,18 @@ for i=borders:length(vv(:,1))-borders+1
             dot     = (ulocal.*d_xcentre) + (vlocal.*d_ycentre);
             produit = sqrt(ulocal.^2 + vlocal.^2)...
                     .*sqrt(d_xcentre.^2 + d_ycentre.^2);
-            sumdp = sum(dot(:))+sum(produit(:));
+            sumdp = sum(sum(dot))+sum(sum(produit));
 
             if sumdp ~= 0
-                L(i,ii) = sum(cross(:)) / sumdp * sign(f(i,ii));
+                L(i,ii) = sum(sum(cross)) / sumdp * sign(f(i,ii));
             else
                 L(i,ii) = 0;
             end
 
         end
     end
+    %LOW(i,:) = circshift(LOWrow,borders);
+    %L(i,:) = circshift(Lrow,borders);
 end
     
 L(isnan(L)) = 0;
@@ -186,3 +193,4 @@ fields.LOW  = LOW.*mask;
 fields.LNAM = L.*mask;
 
 disp(' ')
+

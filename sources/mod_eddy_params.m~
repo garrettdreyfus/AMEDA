@@ -1,4 +1,4 @@
-function [b,bi,bx,bxi,f,f_i,Dx,Dxi] =  mod_eddy_params(keys_sources,stepF)
+function [b,bxi,bi,f,f_i,Dx,Dxi] =  mod_eddy_params(keys_sources,stepF)
 %mod_eddy_params(keys_sources {,stepF})
 %
 %   mod_eddy_params loads user paths and keys defined in keys_sources.m
@@ -272,7 +272,7 @@ gama = Rd *(Dx.^(-1)); % [0.1-1.5] for AVISO 1/8 (0.8 in average)
 % resol is an integer used to improve the precision of centers detection
 % close to 3 pixels per Rd. resol can goes up to 3
 if ~exist('resol','var')
-  resol = max(1,min(3,round(3*(nanmean(Dx(:))/Rd)))); % [1 - 3]
+  resol = max(1,min(3,round(3*nanmean(Dx(:))/Rd))); % [1 - 3]
 end
 
 % Detection parameters (cf. Le Vu et al. 2018 for test results):
@@ -306,7 +306,6 @@ if resol==1
     if grid_reg
         xi = x;
         yi = y;
-	f_i=f;
         maski = mask;
     else
         xi = xr;
@@ -373,6 +372,7 @@ save([path_out,'param_eddy_tracking'],'-v7.3', ...
     'stepF','T','g','dps','V_eddy','Dt','cut_off','D_stp','N_can','DH','nH_lim','n_min','lat_min',...
     'epsil','k_vel_decay','dc_max','nRmin','nR_lim','Np','nrho_lim')
 
+'saved'
 
 % save native grid on interpolated regular grid
 if ~grid_reg

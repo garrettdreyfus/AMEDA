@@ -34,11 +34,16 @@ end
 C = zeros(1,N);
 
 % sliding curvature for Np-point segment
+meanxs = zeros(1,N);
+meanys = zeros(1,N);
+
 for i = 1:N
     
     % find and extract the ith segment
     x = xy2(1,N+i-Np:N+i+Np);
     y = xy2(2,N+i-Np:N+i+Np);
+    meanxs(i) = mean(x);
+    meanys(i) = mean(y);
     
     % coordinate of the segment in km
     if grid_ll
@@ -73,7 +78,8 @@ for i = 1:N
         %R = Par(3);
         
         % In or ~IN the xy contour
-        IN = InPolygon(mean(x),mean(y),xy(1,:),xy(2,:));
+        %IN = InPolygon(mean(x),mean(y),xy(1,:),xy(2,:));
+	IN = true;
         if IN
             C(i) = 1/R;
         else
@@ -84,6 +90,9 @@ for i = 1:N
     end
     
 end
+IN = InPolygon(meanxs,meanys,xy(1,:),xy(2,:));
+IN(~IN) = -1;
+C = C.*IN;
 
 % trunc P
 P = P(1:N);

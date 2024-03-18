@@ -1,4 +1,4 @@
-function [centers0,centers] = mod_eddy_centers(source,stp,fields)
+function [centers0,centers] = mod_eddy_centers(source,stp,fields,bx,bxi,f,f_i,Dxi)
 %[centers0,centers] = mod_eddy_centers(source,stp,fields)
 %
 %  Detect the potential eddy centers present in the domain,
@@ -55,6 +55,7 @@ function [centers0,centers] = mod_eddy_centers(source,stp,fields)
 %=========================
 
 plo=0; % debug mode
+debug=0;
 
 %---------------------------------------------
 % read fields and initialisation
@@ -67,6 +68,8 @@ load('param_eddy_tracking')
 %----------------------------------------
 % load 2D velocity fields (m/s) for step stp
 eval(['[x,y,mask,u,v,ssh] = load_fields_',source,'(stp,resol,deg);'])
+
+
 
 % to calculate psi extrapole u and v to 0 in the land
 u(isnan(u)) = 0;
@@ -124,8 +127,9 @@ while j < size(CS,2)
     if n >= n_min
 
         % make a mask outside the contour
-        %in = InPolygon(x,y,xv,yv);
-    	in = poly2mask((xv-xmin)/xrange*size(x,1),(yv-ymin)/yrange*size(y,2),size(x,1),size(x,2));
+    	in = poly2mask(((xv-xmin)/xrange)*size(x,2),((yv-ymin)/yrange)*size(y,1),size(x,1),size(x,2));
+        %oldin = InPolygon(x,y,xv,yv);
+	
 	if any(any(in))
 		[LC,idx] = max(abs(LNAM(in)));
 		[j_in,i_in]=find(in);
@@ -150,6 +154,7 @@ while j < size(CS,2)
 	end
 
 
+        %in = InPolygon(x,y,xv,yv);
         % L maximum value inside the contour(j)  
         %if any(mask(in).*maskin(:)>0) && max(abs(Lm(:)))~=0
 
@@ -158,7 +163,7 @@ while j < size(CS,2)
             % save coordinates of the L maximum inside the contour(j)
         %   if mask(find(Lm==LC(1),1))==1
         %       
-	%max_index = find(Lm==LC(1),1)
+	%       max_index = find(Lm==LC(1),1)
         %       xLmax = xin(max_index);
         %       yLmax = yin(max_index);
 
@@ -177,9 +182,11 @@ while j < size(CS,2)
     j = j + n + 1; % series of coordinates of the next contour 
 end
 
-disp(['  -> ',num2str(k-1),' max LNAM found step ',num2str(stp)])
+if debug 
+	disp(['  -> ',num2str(k-1),' max LNAM found step ',num2str(stp)])
+end
 
-if k==1
+if k==1 && debug
     disp(['!!! WARNING !!! No LNAM extrema found - check the LNAM computation step ',num2str(stp)])
 end
 
@@ -188,7 +195,9 @@ end
 % one or two max LNAM.
 %----------------------------------------------
 
-disp(['  Remove max LNAM without 2 closed streamlines with proper size step ',num2str(stp)])
+if debug
+	disp(['  Remove max LNAM without 2 closed streamlines with proper size step ',num2str(stp)])
+end
 
 % all max LNAM coordinates for the given step stp
 centers.step = stp;
@@ -216,7 +225,7 @@ for ii=1:length(centers0.x)
     % grid size
     Dx = abs(Dxi(C_J,C_I));
     % first deformation radius
-    Rd = abs(Rdi(C_J,C_I));
+    %Rd = abs(Rdi(C_J,C_I));
     % coriolis parameter
     f = abs(f_i(C_J,C_I));
 
@@ -271,8 +280,10 @@ for ii=1:length(centers0.x)
 		xy_ctsj(k) = yy(cts_j(k),cts_i(k));
         end
     else
-        disp(['!!! ERROR !!! No LNAM maximum computable in the smaller area ',...
-            'centers0 ',num2str(ii),' step ',num2str(stp)]) 
+	if debug
+        	disp(['!!! ERROR !!! No LNAM maximum computable in the smaller area ',...
+            	'centers0 ',num2str(ii),' step ',num2str(stp)]) 
+	end
         xy_ctsi = [];
         xy_ctsj = [];
     end
@@ -372,8 +383,10 @@ for ii=1:length(centers0.x)
                 % record only center with 2 streamlines and proper size
                 if length(radius)>=2 && radius(end)>=nRmin*Dx && radius(end)<=nR_lim*Rd
 
-                    disp(['   Validate max LNAM ',num2str(ii),...
-                        ' with 2 streamlines at step ',num2str(stp)])
+		    if debug
+			    disp(['   Validate max LNAM ',num2str(ii),...
+				' with 2 streamlines at step ',num2str(stp)])
+		    end
 
                     type1(ii) = centers0.type(ii);
                     x1(ii)    = xy_ci;
@@ -384,8 +397,12 @@ for ii=1:length(centers0.x)
                     second(ii) = 0; % no second center
 
                     j = length(isolines); % stop the scan
+		else
+			
+               		%disp('failflags: ',length(radius)>=2,radius(end)>=nRmin*Dx,radius(end)<=nR_lim*Rd);
 
                 end
+
 
             % the contour contains 2 centers
             elseif nc==2 && ii>1
@@ -414,27 +431,35 @@ for ii=1:length(centers0.x)
                     % or validated as single eddy
                     elseif second(jj)==0
 
-                        disp(['   Second max LNAM ',num2str(ii),...
-                            ' in the same streamline ',num2str(jj),...
-                            ' already validated at step ',num2str(stp)])
+			if debug
+				disp(['   Second max LNAM ',num2str(ii),...
+				    ' in the same streamline ',num2str(jj),...
+				    ' already validated at step ',num2str(stp)])
+			end
 
                     % or already recorded as double eddy
                     elseif second(jj)==ii
 
-                        display(['   2 max LNAM in the same streamline: ',...
-                            num2str(ii),' and ',num2str(jj),' step ',num2str(stp)])
+			if debug
+				display(['   2 max LNAM in the same streamline: ',...
+				    num2str(ii),' and ',num2str(jj),' step ',num2str(stp)])
+			end
 
                         % search for the higher LNAM
                         if MaxL(jj) > MaxL(ii)
 
-                            display(['    -> validate center ',num2str(jj),...
+			    if debug
+                            	display(['    -> validate center ',num2str(jj),...
                                 ' step ',num2str(stp)])
+			    end
                             second(ii) = NaN;
 
                         else
 
-                            display(['    -> validate center ',num2str(ii),...
-                                ' step ',num2str(stp)])
+			    if debug
+				    display(['    -> validate center ',num2str(ii),...
+					' step ',num2str(stp)])
+			    end
                             second(ii) = jj; % second center indice
                             second(jj) = NaN;
 
@@ -443,9 +468,11 @@ for ii=1:length(centers0.x)
                     % debug warning
                     elseif second(jj)~=ii
 
-                        disp(['   !!! ERROR !!! Second max LNAM ',num2str(jj),...
+			if debug
+                        	disp(['   !!! ERROR !!! Second max LNAM ',num2str(jj),...
                             ' include center ',num2str(second(jj)),...
                             ' instead of ',num2str(ii),' at step ',num2str(stp)])
+			end
 
                     end
 
