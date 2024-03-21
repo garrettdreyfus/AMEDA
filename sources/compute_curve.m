@@ -90,9 +90,11 @@ for i = 1:N
     end
     
 end
-IN = InPolygon(meanxs,meanys,xy(1,:),xy(2,:));
+IN = double(InPolygon(meanxs,meanys,xy(1,:),xy(2,:)));
 IN(~IN) = -1;
+
 C = C.*IN;
+
 
 % trunc P
 P = P(1:N);

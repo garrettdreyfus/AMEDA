@@ -10,18 +10,18 @@ xcoords = x(2:size(x,1)-1,1:size(x,2)-2);
 xcoords0 = x(2:size(x,1)-1,3:size(x,2));
 SPHEROID = referenceEllipsoid('wgs84', 'km'); % // Reference ellipsoid. You can enter 'km' or 'm'    
 [N, E]   = geodetic2ned(ycoords, xcoords, 0, ycoords0, xcoords0, 0, SPHEROID);
-distx = sqrt(N.^2 + E.^2); 
+distx = sqrt(N.^2 + E.^2)/2; 
 Dx = nan*x;
 Dx(2:size(x,1)-1,2:size(x,2)-1)=(distx+disty)/2;
 
-olddistx = nan*x;
-for i=2:size(x,1)-1
-    for j=2:size(x,2)-1
-        olddistx(i,j) = sw_dist( y(i,[j-1 j+1]), x(i,[j-1 j+1]), 'km')/2;
-    end
-end
+%olddistx = nan*x;
+%for i=2:size(x,1)-1
+    %for j=2:size(x,2)-1
+        %olddistx(i,j) = sw_dist( y(i,[j-1 j+1]), x(i,[j-1 j+1]), 'km')/2;
+    %end
+%end
 
-droldDx = ( olddistx + disty )/2;
+%droldDx = ( olddistx + disty )/2;
 
 Dx(1,:)  = Dx(2,:)-diff(Dx(2:3,:));
 Dx(end,:)= Dx(end-1,:)+diff(Dx(end-2:end-1,:));

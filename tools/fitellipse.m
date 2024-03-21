@@ -69,7 +69,8 @@ function [z, a, b, alpha] = fitellipse(x, varargin)
 
 % Copyright Richard Brown, this code can be freely used and modified so
 % long as this line is retained
-error(nargchk(1, 5, nargin, 'struct'))
+%error(nargchk(1, 5, nargin, 'struct'))
+
 
 % Default parameters
 params.fNonlinear = true;
