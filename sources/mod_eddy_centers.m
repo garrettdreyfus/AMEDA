@@ -98,6 +98,9 @@ LOW(OW>=0 | isnan(OW)) = 0;
 % test if the grid is regular (/!\ NEMO source) or not
 if grid_reg ||...
         (~grid_reg && min(x(1,:)==x(end,:)) && min(y(:,1)==y(:,end)))
+    size(x)
+    size(y)
+    size(LOW)
     CS = contourc(x(1,:),y(:,1),LOW,[K K]);
 else
     HF = figure('visible','off');

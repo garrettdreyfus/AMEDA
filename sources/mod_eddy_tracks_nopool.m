@@ -311,7 +311,9 @@ for i=step0:stepF
     eddy.calcul(isnan(eddy.calcul)) = 1;
     eddy.Rd(isnan(eddy.Rd)) = nanmean(Rd(:));
     eddy.gama(isnan(eddy.gama)) = nanmean(Rd(:))/nanmean(Dx(:));
-    eddy.f(isnan(eddy.f)) = nanmean(f(:));
+    %size(Rd)
+    %f = 4*pi/T*sind(yi); % in s-1
+    %eddy.f(isnan(eddy.f)) = nanmean(f(:));
     
     %----------------------------------------------------------
     % allocate interacting eddies indice

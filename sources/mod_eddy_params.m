@@ -58,6 +58,11 @@ function [b,bi,bx,bxi,f,f_i,Dx,Dxi] =  mod_eddy_params(keys_sources,stepF)
 %----------------------------------------------
 run(keys_sources)
 
+load('filenames.mat');
+nc_u = fnames(1,:);
+nc_v = fnames(1,:);
+nc_dim = fnames(1,:);
+nc_ssh = fnames(1,:);
 %% Calculate the meshgrid size at (x,y) coordinates
 %----------------------------------------------
 
