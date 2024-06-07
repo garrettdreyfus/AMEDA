@@ -209,7 +209,7 @@ dc_max = 3.5;
 %----------------------------------------------
 % typical eddy speed deplacement in a day
 % 0 to use <Vmax> for each eddy instead
-V_eddy = 6.5; % km/day
+V_eddy = 3.25; % km/day
 
 % maximal delay after its last detection for tracking an eddy [1-15]
 % represent the temporal correlation depending on the coverage of an area

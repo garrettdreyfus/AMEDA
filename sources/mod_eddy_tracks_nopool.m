@@ -48,64 +48,6 @@ function mod_eddy_tracks_nopool(name,update,stepE)
 %           y (second row) coordinates of the 'L' vertices defining
 %           the eddy shape for the 'm'-th step.
 %   ...
-%{
-second center in interaction location:
-    x2
-    y2
-    dc is the distance between the two centers
-    ind2 is the indice of the second center in shapes2
-features of the Vmax profil:
-    velmax1 is the maximum average speed along the contour
-    tau1 is the minimal revolution period
-    deta1 is the extremum delta ssh of the contour
-    rmax1 is the radius of the circle equivalent to aire1
-    aire1 is the area of the contour
-features of the Vend profil as the Vmax profil definition
-    velmax3
-    tau3
-    deta3
-    rmax3
-    aire3
-if streamlines=1, features of the V-R profil:
-    alpha
-    rsquare
-    rmse
-if extended_diags=1, additional diags:
-    xbary1 and ybary1 are the centroid center of the contour
-    ellip1 is the 1-a/b ellipticity
-    ke1
-    vort1
-    vortM1
-    OW1
-    LNAM1
-features and additional diags of the interacting contour
-    shapes2
-    velmax2
-    tau2
-    deta2
-    rmax2
-    aire2
-    xbary2
-    ybary2
-    ellip2
-features of eddy in the grid
-    Rd is the first deformation radius
-    game is the number of grid point to define Rd
-flag of the contour
-    calcul is 1 if calculated from uv
-    large1 is 1 if no maximum is found on V-R profil
-    large2 is 1 if no maximum is found for interacting contour
-    weak is 1 if a too weak interacting contour in front of velmax1 has been removed
-indice of the interaction
-    ind of x1,y1 in shapes1
-    interaction indice of the interacting eddy in tracks
-    interaction2 indice of extra interacting eddy in tracks
-flag about the merging and splitting
-    split is 1 if eddy come from a splitting
-    merge is 1 if eddy end by a merging
-    split2 same for extra eddy
-    merge2 same for extra eddy
-%}  
 %
 % Also:
 %
@@ -666,8 +608,19 @@ for i=step0:stepF
             disp(' ')
             disp(['Assigment at step ',num2str(stp)])
             disp(' ')
+
+            nonempty = find(sum(~isinf(C),2));
+            Csmall = C(sum(~isinf(C),2)~=0,:);  
             
-            [assign,cost] = assignmentoptimal(C);
+            disp(['C: ' num2str(size(C))]);
+            disp(['Csmall: ' num2str(size(Csmall))]);
+            %[assignsmall,cost] = assignmentoptimal(Csmall);
+            [assignsmall,cost] = munkres(Csmall);
+
+            assign = zeros(size(C,1),1,'uint32');
+            for i=1:length(nonempty)
+                assign(nonempty(i)) = assignsmall(i);
+            end
             
             if cost==0 && sum(assign)~=0
                 display ('Could not find solution')
@@ -799,7 +752,7 @@ for i=step0:stepF
         % 6th: eddies are considered dissipated when tracks are not
         % updated for longer than 'Dt' days.
         %----------------------------------------------------------
-
+        disp('made it here')
         moved = 0;
 
         for i2=1:length(tracks)

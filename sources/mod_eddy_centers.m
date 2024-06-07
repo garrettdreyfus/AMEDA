@@ -55,7 +55,7 @@ function [centers0,centers] = mod_eddy_centers(source,stp,fields,bx,bxi,f,f_i,Dx
 %=========================
 
 plo=0; % debug mode
-debug=0;
+debug=false;
 
 %---------------------------------------------
 % read fields and initialisation
@@ -551,8 +551,10 @@ if ~isempty(second==0)
         % double eddies with a weaker center in the streamline
         IND2 = IND1(isnan(second(IND1)));
         for k=1:length(IND2)
+	    if debug
             disp (['   Remove max LNAM ',num2str(IND2(k)),...
                 ' at step ',num2str(stp)])
+	    end
             IND = [IND find(second==IND2(k))];
         end
 

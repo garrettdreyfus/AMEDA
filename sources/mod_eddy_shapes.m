@@ -106,7 +106,7 @@ function [centers2,shapes1,shapes2,profil2,warn_shapes,warn_shapes2] = ...
 
 disp(['Start step ',num2str(stp),' %-------------'])
 disp(' ')
-
+debug=false
 load('param_eddy_tracking')
 %----------------------------------------------
 % load key_source and parameters
@@ -578,9 +578,11 @@ else
             if centers2.type(ii)~=centers2.type(ind)
                 
                 % print out for debugging
+		if debug
                 disp(['!!! ERROR !!! Double eddy ',...
                     num2str(ii),' step ',num2str(stp),...
                     ' mistaken around 2 different type of eddy'])
+		end
                 mv=1;
                 
             %----------------------------------------------------------
@@ -593,8 +595,10 @@ else
                 if shapes1.velmax(ind) < shapes2.velmax(ii) ||...
                     shapes1.velmax(ii) < shapes2.velmax(ii)
                 
+		    if debug
                     disp(['   Double eddy ',num2str(ii),' interact with eddy ',...
                         num2str(ind),' step ',num2str(stp)])
+		    end
 
                     centers2.ind2(ii) = ind; % index the second center
                     centers2.ind2(ind) = ii; % index the second center
@@ -602,8 +606,10 @@ else
                     % test shapes2(ind) exists
                     if ~isnan(shapes2.velmax(ind))
 
+			if debug
                         disp(['   -> Double eddy ',num2str(ii),' with eddy ',num2str(ind),...
                             ' step ',num2str(stp),' is redundant'])
+			end
 
                         % test shapes2 both calculated or both not calculated
                         if warn_shapes2.calcul_curve(ii) == warn_shapes2.calcul_curve(ind)
@@ -618,9 +624,11 @@ else
                                 end
                             end
                             if mv
+				if debug
                                 disp(['    -> Double eddy ',num2str(ii),...
                                     ' weaker than double eddy ',num2str(ind),...
                                     ' at step ',num2str(stp)])
+				end
                             end
 
                         else
@@ -628,8 +636,10 @@ else
                             %----------------------------------------------------------
                             % remove shapes2(ii) if calculated
                             if warn_shapes2.calcul_curve(ii)==1
+				if debug
                                 disp(['    -> Calculated double eddy ',num2str(ii),...
                                     ' removed at step ',num2str(stp)])
+				end
                                 mv= 1;
                             end
 
@@ -642,8 +652,10 @@ else
                 else
 
                     % print out for debugging
+		    if debug
                     disp(['   Double eddy ',num2str(ii),' with eddy ',num2str(ind),...
                         ' too weak in speed at step ',num2str(stp)])
+		    end
                     mv=1;
 
                 end
@@ -653,9 +665,11 @@ else
             % copy shapes2 to shapes1_end and also shapes1_max if relevant
             else
 
+		if debug
                 disp(['   Double eddy ',num2str(ii), ' step ',num2str(stp),...
                     ' contains a second core too small'...
                     ' and get a new last contour!!!'])
+		end
                 mv= 1;
 
                 % remove centers2 if no second eddy
@@ -680,8 +694,10 @@ else
                             warn_shapes2.large_curve1(ii) == 1
 
                     % shapes2 met a speed decrease > 3%
+		    if debug
                     disp(['   -> Double eddy ',num2str(ii), ' step ',num2str(stp),...
                         ' becomes true eddy!!!'])
+		    end
                     warn_shapes2.large_curve1(ii) = 0;
                     
                 end
@@ -693,8 +709,10 @@ else
                         warn_shapes2.large_curve2(ii) <= warn_shapes2.large_curve1(ii)
 
                     % shapes2 is a proper speed radius
+		    if debug
                     disp(['   -> Double eddy ',num2str(ii), ' step ',num2str(stp),...
                         ' becomes also new speed radius!!!'])
+		    end
                     for n=2:12
                         shapes1.(names1{n})(ii) = shapes2.(names2{n})(ii);
                     end
@@ -707,8 +725,10 @@ else
             % at the end remove shapes2 too weak or mistaken as explain above
             if mv
 
+		if debug	
                 disp(['   Double eddy ',num2str(ii),' with eddy ',num2str(ind),...
                     ' step ',num2str(stp),' is removed!!!'])
+		end
                 shapes2.xy{ii} = NaN;
                 names = fieldnames(shapes2);
                 for n=3:length(names)
